@@ -46,7 +46,7 @@ public class LoginServlet extends HttpServlet {
              misession.setAttribute("usuario", usuario);
              response.sendRedirect("index.html");
          }else{
-             response.sendRedirect("login.html");
+             response.sendRedirect("login.html" + "la cuenta que accedio no se encuentra en el sistema");
          }
     }
 
