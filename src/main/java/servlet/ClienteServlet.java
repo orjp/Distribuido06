@@ -22,8 +22,8 @@ import org.json.JSONObject;
 @WebServlet(name = "ClienteServlet", urlPatterns = {"/cliente"})
 public class ClienteServlet extends HttpServlet {
 
-    @PersistenceUnit(unitName = "com.mycompany_TPD06_war_1.0-SNAPSHOTPU")
-    private EntityManagerFactory emf = Persistence.createEntityManagerFactory("com.mycompany_TPD06_war_1.0-SNAPSHOTPU");
+    @PersistenceUnit(unitName = "com.mycompany_Distribuido06_war_1.0-SNAPSHOTPU")
+    private EntityManagerFactory emf = Persistence.createEntityManagerFactory("com.mycompany_Distribuido06_war_1.0-SNAPSHOTPU");
 
     private EntityManager getEntityManager() {
         return emf.createEntityManager();

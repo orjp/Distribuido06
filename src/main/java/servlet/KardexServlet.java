@@ -24,7 +24,7 @@ import org.json.JSONObject;
 @WebServlet(name = "KardexServlet", urlPatterns = {"/kardex", "/kardex/*"})
 public class KardexServlet extends HttpServlet {
 
-    private final EntityManagerFactory emf = Persistence.createEntityManagerFactory("com.mycompany_TPD06_war_1.0-SNAPSHOTPU");
+    private final EntityManagerFactory emf = Persistence.createEntityManagerFactory("com.mycompany_Distribuido06_war_1.0-SNAPSHOTPU");
     private final KardexJpaController kardexController = new KardexJpaController();
     private final ProductoJpaController productoController = new ProductoJpaController();
 

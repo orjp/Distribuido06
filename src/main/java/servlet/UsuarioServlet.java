@@ -16,7 +16,7 @@ import org.json.JSONObject;
 @WebServlet(name = "UsuarioServlet", urlPatterns = "/usuarios" )
 public class UsuarioServlet extends HttpServlet {
 
-    private EntityManagerFactory emf = Persistence.createEntityManagerFactory("com.mycompany_TPD06_war_1.0-SNAPSHOTPU");
+    private EntityManagerFactory emf = Persistence.createEntityManagerFactory("com.mycompany_Distribuido06_war_1.0-SNAPSHOTPU");
     private EntityManager em;
 
     @Override

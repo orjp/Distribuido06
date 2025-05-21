@@ -28,8 +28,8 @@ import org.json.JSONObject;
 public class ProductoServlet extends HttpServlet {
 
     //Colocar la persistencia del proyecto
-    @PersistenceUnit(unitName = "com.mycompany_TPD06_war_1.0-SNAPSHOTPU")
-    private static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("com.mycompany_TPD06_war_1.0-SNAPSHOTPU");
+    @PersistenceUnit(unitName = "com.mycompany_Distribuido06_war_1.0-SNAPSHOTPU")
+    private static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("com.mycompany_Distribuido06_war_1.0-SNAPSHOTPU");
     private final ProductoJpaController productoController = new ProductoJpaController(emf);
     
     
