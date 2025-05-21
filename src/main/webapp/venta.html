@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Registro de Venta</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #4a90e2, #50e3c2);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .form-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            color: #555;
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        input[type="date"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+
+        input[type="submit"] {
+            background-color:#5469c4;
+            color: white;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        input[type="submit"]:hover {
+            background-color: #e65a50;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2>Registro de Venta</h2>
+        <form action="VentaServlet" method="get">
+            <label for="codiVent">Código de Venta:</label>
+            <input type="text" id="codiVent" name="codiVent" required>
+
+            <label for="codiClie">Código del Cliente:</label>
+            <input type="text" id="codiClie" name="codiClie" required>
+
+            <label for="fechVen">Fecha de Venta:</label>
+            <input type="date" id="fechVen" name="fechVen" required>
+
+            <input type="submit" value="Registrar Venta">
+        </form>
+    </div>
+</body>
+</html>

@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestión de Kardex</title>
+  <style>
+      body {
+          font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+          background-color: #f5f7fa;
+          color: #333;
+          margin: 0;
+          padding: 40px 20px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          min-height: 100vh;
+      }
+
+      h2 {
+          font-weight: 700;
+          font-size: 2rem;
+          margin-bottom: 30px;
+          color: #222;
+      }
+
+      .input-group {
+          display: flex;
+          align-items: center;
+          margin-bottom: 15px;
+      }
+
+      .input-group label {
+          font-weight: 600;
+          margin-right: 15px;
+          color: #555;
+          width: 150px;
+          text-align: right;
+      }
+
+      .input-group input[type="number"] {
+          width: 280px;
+          padding: 10px 14px;
+          border: 2px solid #d1d9e6;
+          border-radius: 6px;
+          font-size: 1rem;
+          transition: border-color 0.3s ease;
+          background-color: white;
+          color: #333;
+      }
+
+      .input-group input[type="number"]:focus {
+          border-color: #3f51b5;
+          outline: none;
+          background-color: #fafaff;
+      }
+
+      .buttons {
+          margin-top: 30px;
+          display: flex;
+          gap: 15px;
+          flex-wrap: wrap;
+          justify-content: center;
+      }
+
+      button {
+          background-color: #3f51b5;
+          border: none;
+          padding: 12px 25px;
+          border-radius: 8px;
+          color: white;
+          font-weight: 600;
+          font-size: 1rem;
+          cursor: pointer;
+          box-shadow: 0 4px 6px rgba(63, 81, 181, 0.3);
+          transition: background-color 0.3s ease, box-shadow 0.3s ease;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+      }
+
+      button:hover {
+          background-color: #2c3a9f;
+          box-shadow: 0 6px 10px rgba(44, 58, 159, 0.5);
+      }
+
+      button::before {
+          content: "⚙️";
+          font-size: 1.2rem;
+      }
+
+      table {
+          margin-top: 40px;
+          border-collapse: collapse;
+          width: 100%;
+          max-width: 900px;
+          background-color: white;
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+      }
+
+      thead {
+          background-color: #3f51b5;
+          color: white;
+      }
+
+      th, td {
+          padding: 15px 20px;
+          text-align: left;
+          border-bottom: 1px solid #e0e0e0;
+          font-size: 1rem;
+      }
+
+      tbody tr:hover {
+          background-color: #f1f3ff;
+      }
+
+      tbody tr:nth-child(even) {
+          background-color: #fafaff;
+      }
+  </style>
+</head>
+
+<body>
+    
+    <h2>Gestión de Kardex</h2>
+    <div class="input-group">
+        <label for="codiProd">Código Producto:</label>
+        <input type="number" placeholder="Ingrese el codigo producto" id="codiProd">
+    </div>
+    
+    <div class="input-group">
+        <label for="cantProd">Cantidad:</label>
+        <input type="number" id="cantProd">
+    </div>
+    
+    <div class="input-group">
+        <label for="saldProd">Stock actual:</label>
+        <input type="number" id="saldProd" >
+    </div>
+
+    <div class="input-group">
+        <label for="moviKard">Movimiento:</label>
+        <input type="number" placeholder="(1: Entrada, 2: Salida)" id="moviKard" min="1" max="2">
+    </div>
+
+    <div class="buttons">
+        <button onclick="crearKardex()">Crear</button>
+        <button onclick="actualizarKardex()">Actualizar</button>
+        <button onclick="eliminarKardex()">Eliminar</button>
+        <button onclick="listarKardex()">Listar</button>
+    </div>
+
+    <h3>Registros Kardex</h3>
+    <p id ="mensajesSinRegistro">No hay registro en el Kardex.</p>
+    <table id="listaKardex" style="display: none;">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Saldo</th>
+                <th>Movimiento</th>
+                
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Filas serán agregadas por JS -->
+        </tbody>
+    </table>
+
+<script>
+  const url = 'kardex';
+
+  function getProductoByCodiProd() {
+  const codiProd = document.getElementById('codiProd').value;
+  if (!codiProd) return;
+
+  fetch(`producto?codiProd=${codiProd}`)
+    .then(response => {
+      if (!response.ok) throw new Error("Producto no encontrado");
+      return response.json();
+    })
+    .then(data => {
+      // Aquí usamos precioProd para el saldo y stockProd para la cantidad
+      document.getElementById('saldProd').value = data.stocProd;
+    })
+    .catch(error => {
+      alert(error.message);
+      document.getElementById('cantProd').value = '';
+      document.getElementById('saldProd').value = '';
+      document.getElementById('moviKard').value = '';
+    });
+}
+
+
+  document.getElementById('codiProd').addEventListener('blur', getProductoByCodiProd);
+
+
+  function listarKardex() {
+   fetch(url)
+    .then(res => res.json())
+    .then(data => {
+      const tabla = document.getElementById('listaKardex');
+      const cuerpoTabla = tabla.getElementsByTagName('tbody')[0];
+      const mensaje = document.getElementById('mensajesSinRegistro');
+      cuerpoTabla.innerHTML = '';
+      
+        if (data.length === 0) {
+        tabla.style.display = 'none';
+        mensaje.style.display = 'block';
+        }else{
+            data.forEach(k => {
+            const fila = document.createElement('tr');
+            const movimientoTexto = k.moviKard === 1 ? 'Entrada' : 'Salida';
+            fila.innerHTML = `
+          <td>${k.codiProd}</td>
+          <td>${k.cantProd}</td>
+          <td>${k.saldProd}</td>
+          <td>${movimientoTexto}</td>
+          
+        `;
+            cuerpoTabla.appendChild(fila);
+            });
+            tabla.style.display = 'table';
+            mensaje.style.display = 'none';   
+            }
+        })
+            .catch(err =>{
+                alert('Error al listar Kardex: '+err);
+            });
+    }
+
+  function crearKardex() {
+      const codiProd = parseInt(document.getElementById('codiProd').value);  
+      const cantProd = parseInt(document.getElementById('cantProd').value);
+      const saldProd = parseInt(document.getElementById('saldProd').value);
+      const moviKard = parseInt(document.getElementById('moviKard').value);
+      if (isNaN(codiProd) || isNaN(cantProd) || isNaN(saldProd) || isNaN(moviKard)) {
+        alert("Todos los campos son obligatorios y deben ser números válidos.");
+        return;
+    }
+    
+    const data = {
+        codiProd,
+        cantProd,
+        stocProd: saldProd,
+        moviKard
+    };
+    console.log("Datos a enviar: ",data);
+
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8'
+      },
+      body: JSON.stringify(data)
+    }).then(res => {
+      if (res.ok) {
+        alert("Kardex creado exitosamente");
+        listarKardex();
+      } else {
+        res.text().then(msg => alert("Error al crear: " + msg));
+      }
+    }).catch(err => alert("Error al crear (catch): " + err));
+  }
+
+  function actualizarKardex() {
+    const codiProd = parseInt(document.getElementById('codiProd').value);
+    const cantProd = parseInt(document.getElementById('cantProd').value);
+    const saldProd = parseInt(document.getElementById('saldProd').value);
+    const moviKard = parseInt(document.getElementById('moviKard').value);
+
+    if (isNaN(codiProd) || isNaN(cantProd) || isNaN(saldProd) || isNaN(moviKard)) {
+      alert("Todos los campos son obligatorios y deben ser números válidos.");
+      return;
+    }
+
+    const data = { codiProd, cantProd, stocProd:saldProd, moviKard };
+
+    fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json; charset=UTF-8'
+      },
+      body: JSON.stringify(data)
+    }).then(res => {
+      if (res.ok) {
+        alert("Kardex y Producto actualizados exitosamente");
+        listarKardex();
+        document.getElementById('codiProd').value = '';
+        document.getElementById('cantProd').value = '';
+        document.getElementById('saldProd').value = '';
+        document.getElementById('moviKard').value = '';
+      } else {
+        res.text().then(msg => alert("Error al actualizar: " + msg));
+      }
+    }).catch(err => alert("Error al actualizar (catch): " + err));
+  }
+
+  function eliminarKardex() {
+    const codigo = document.getElementById('codiProd').value;
+
+  if (!codigo) {
+    alert("Por favor, ingresa el código del producto a eliminar.");
+    return;
+  }
+
+  fetch(`${url}?codiProd=${codigo}`, {
+    method: 'DELETE'
+  }).then(res => {
+    if (res.ok) {
+      alert("Kardex eliminado exitosamente");
+      listarKardex();
+    } else {
+      res.text().then(msg => alert("Error al eliminar: " + msg));
+    }
+  }).catch(err => alert("Error al eliminar (catch): " + err));
+}
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+        <title>Gestión de Clientes</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"/>
+        <style>
+            body {
+                font-family: 'Arial', sans-serif;
+                background-color: #e9ecef;
+                margin: 0;
+                padding: 20px;
+            }
+            h1 {
+                color: #007bff;
+                text-align: center;
+                margin-bottom: 20px;
+            }
+            .container {
+                max-width: 600px;
+                margin: 0 auto;
+                background: #fff;
+                padding: 30px;
+                border-radius: 10px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            }
+            input {
+                width: 100%;
+                padding: 12px;
+                margin-bottom: 10px;
+                border: 2px solid #ced4da;
+                border-radius: 5px;
+                transition: border-color 0.3s;
+            }
+            input:focus {
+                border-color: #007bff;
+                outline: none;
+            }
+            button {
+                padding: 12px 20px;
+                margin: 5px 0;
+                border: none;
+                border-radius: 5px;
+                color: white;
+                cursor: pointer;
+                transition: background-color 0.3s, transform 0.2s;
+            }
+            .button-actualizar {
+                background-color: #28a745;
+            }
+            .button-actualizar:hover {
+                background-color: #155724;
+                transform: scale(1.05);
+            }
+            .button-listar {
+                width: 100%;
+                background-color: #007bff;
+                border-radius: 5px;
+            }
+            .button-listar:hover {
+                background-color: #0056b3;
+            }
+            hr {
+                margin: 20px 0;
+                border: 1px solid #007bff;
+            }
+            ul {
+                list-style-type: none;
+                padding: 0;
+            }
+            li {
+                padding: 12px;
+                background: #f8f9fa;
+                margin: 5px 0;
+                border-radius: 5px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            li span {
+                flex-grow: 1;
+            }
+            li button {
+                background-color: transparent;
+                border: none;
+                cursor: pointer;
+                font-size: 16px;
+                margin-left: 5px;
+                color: #007bff;
+            }
+            li button:hover {
+                color: #0056b3;
+                transform: scale(1.1);
+            }
+            .mensaje {
+                text-align: center;
+                margin-top: 15px;
+                font-weight: bold;
+            }
+            .mensaje-exito {
+                color: #28a745;
+            }
+            .mensaje-error {
+                color: #dc3545;
+            }
+            .icon-editar {
+                color: #f1c40f;
+            }
+            .icon-eliminar {
+                color: #e74c3c;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Gestión de Clientes</h1>
+            <div id="mensaje" class="mensaje"></div>
+            <div>
+                <input type="hidden" id="codiClie"  />
+                <input type="text" id="nombClie" placeholder="Editar nombre de cliente" />
+                <button class="button-actualizar" id="btnActualizar" onclick="crearOActualizarCliente()">
+                    <i class="fas fa-edit"></i> Actualizar
+                </button>
+            </div>
+            <hr />
+            <button class="button-listar" onclick="listarClientes()"><i class="fas fa-list"></i> Listar Clientes</button>
+            <table id="tablaClientes" style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background-color: #ced4da; color: white;">
+                        <th style="padding: 10px; border: 1px solid #dee2e6;">DNI</th>
+                        <th style="padding: 10px; border: 1px solid #dee2e6;">Nombre</th>
+                        <th style="padding: 10px; border: 1px solid #dee2e6;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+
+        </div>
+
+        <script>
+            const url = 'cliente';
+            const mensajeDiv = document.getElementById('mensaje');
+            const tablaClientesBody = document.querySelector('#tablaClientes tbody');
+            const btnActualizar = document.getElementById('btnActualizar');
+
+            function mostrarMensaje(texto, tipo) {
+                mensajeDiv.textContent = texto;
+                mensajeDiv.className = `mensaje mensaje-${tipo}`;
+            }
+
+            function listarClientes() {
+                fetch(url)
+                        .then(res => res.json())
+                        .then(clientes => {
+                            tablaClientesBody.innerHTML = '';
+                            clientes.forEach(cliente => {
+                                const fila = document.createElement('tr');
+                                fila.innerHTML = `
+            <td style="padding: 10px; border: 1px solid #dee2e6;">${cliente.codiClie}</td>
+            <td style="padding: 10px; border: 1px solid #dee2e6;">${cliente.nombClie}</td>
+            <td style="padding: 10px; border: 1px solid #dee2e6; text-align: center;">
+                <button onclick="cargarCliente('${cliente.codiClie}')" title="Editar">
+                    <i class="fas fa-edit icon-editar"></i>
+                </button>
+                <button onclick="eliminarCliente('${cliente.codiClie}')" title="Eliminar">
+                    <i class="fas fa-trash-alt icon-eliminar"></i>
+                </button>
+            </td>`;
+                                tablaClientesBody.appendChild(fila);
+                            });
+                        })
+                        .catch(error => {
+                            console.error("Error al listar clientes:", error);
+                            mostrarMensaje('Error al obtener la lista de clientes.', 'error');
+                        });
+            }
+
+            function crearOActualizarCliente() {
+                const codiClie = document.getElementById('codiClie').value;
+                const nombClie = document.getElementById('nombClie').value.trim();
+
+                if (!codiClie || !nombClie) {
+                    mostrarMensaje('Seleccione un cliente para actualizar y asegúrese de ingresar un nombre.', 'error');
+                    return;
+                }
+
+                fetch(`${url}?codiClie=${codiClie}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json; charset=UTF-8'},
+                    body: JSON.stringify({codiClie, nombClie})
+                })
+                        .then(res => {
+                            if (res.ok)
+                                return res.json();
+                            throw new Error('No se pudo actualizar el cliente.');
+                        })
+                        .then(() => {
+                            listarClientes();
+                            mostrarMensaje('Cliente actualizado con éxito.', 'exito');
+                            document.getElementById('nombClie').value = '';
+                            document.getElementById('codiClie').value = '';
+                        })
+                        .catch(error => {
+                            console.error(error);
+                            mostrarMensaje(error.message, 'error');
+                        });
+            }
+
+            function cargarCliente(codi) {
+                fetch(url)
+                        .then(res => res.json())
+                        .then(clientes => {
+                            const cliente = clientes.find(c => c.codiClie == codi);
+                            if (cliente) {
+                                document.getElementById('codiClie').value = cliente.codiClie;
+                                document.getElementById('nombClie').value = cliente.nombClie;
+                                mostrarMensaje('Cliente cargado para editar.', 'exito');
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error al cargar cliente:", error);
+                            mostrarMensaje('Error al cargar el cliente.', 'error');
+                        });
+            }
+
+            function eliminarCliente(codi) {
+                if (!confirm('¿Estás seguro de que deseas eliminar este cliente?'))
+                    return;
+
+                fetch(`${url}?codiClie=${codi}`, {method: 'DELETE'})
+                        .then(res => {
+                            if (res.ok) {
+                                listarClientes();
+                                mostrarMensaje('Cliente eliminado con éxito.', 'exito');
+                            } else {
+                                throw new Error('No se pudo eliminar el cliente.');
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error al eliminar cliente:", error);
+                            mostrarMensaje(error.message, 'error');
+                        });
+            }
+
+            listarClientes();
+        </script>
+    </body>
+</html>

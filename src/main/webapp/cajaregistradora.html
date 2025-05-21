@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Caja Registradora</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background: #f0f4fa;
+                color: #1f4e79;
+                margin: 0;
+                padding: 0;
+            }
+            main {
+                max-width: 900px;
+                margin: 20px auto;
+                background: white;
+                padding: 25px 30px;
+                border-radius: 8px;
+                box-shadow: 0 0 12px rgba(31,78,121,0.15);
+            }
+            h1, h2, h3 {
+                color: #1f4e79;
+                margin-bottom: 15px;
+            }
+            label {
+                display: block;
+                margin: 10px 0 6px 0;
+            }
+            input[type=text], input[type=number] {
+                width: 100%;
+                max-width: 320px;
+                padding: 8px 10px;
+                border: 1.5px solid #1f4e79;
+                border-radius: 5px;
+                font-size: 1rem;
+                box-sizing: border-box;
+            }
+            button {
+                background-color: #1f4e79;
+                color: white;
+                padding: 10px 20px;
+                font-size: 1rem;
+                border: none;
+                border-radius: 5px;
+                margin-top: 15px;
+                cursor: pointer;
+                transition: background-color 0.25s ease;
+            }
+            button:hover {
+                background-color: #163b5a;
+            }
+            #mensaje {
+                margin-top: 15px;
+                padding: 12px;
+                border-radius: 5px;
+            }
+            #mensaje.success {
+                background-color: #d9f0d9;
+                color: #2d662d;
+            }
+            #mensaje.error {
+                background-color: #f8d7da;
+                color: #842029;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 25px;
+            }
+            th, td {
+                border: 1px solid #1f4e79;
+                padding: 8px 12px;
+                text-align: left;
+            }
+            th {
+                background-color: #1f4e79;
+                color: white;
+            }
+            #crearClienteSection {
+                margin-top: 25px;
+                border: 2px solid #1f4e79;
+                border-radius: 6px;
+                background: #d9e8fc;
+                padding: 15px;
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <h1>Caja Registradora</h1>
+
+            <section id="clienteSection">
+                <h2>Cliente</h2>
+                <label for="clienteDniInput">Ingrese DNI o Código Cliente:</label>
+                <input type="text" id="clienteDniInput" placeholder="DNI o Código Cliente" />
+                <button id="buscarClienteBtn">Buscar Cliente</button>
+                <p id="clienteNombre"></p>
+            </section>
+
+            <section id="crearClienteSection" style="display:none;">
+                <h3>Cliente no encontrado. Crear nuevo cliente:</h3>
+                <label for="nuevoNombreCliente">Nombre completo:</label>
+                <input type="text" id="nuevoNombreCliente" placeholder="Nombre completo" />
+                <button id="crearClienteBtn">Crear Cliente</button>
+            </section>
+
+            <section id="productoSection" style="margin-top:30px;">
+                <h2>Producto</h2>
+                <label for="productoIdInput">Ingrese Código del Producto:</label>
+                <input type="text" id="productoIdInput" placeholder="Código Producto" />
+                <button id="buscarProductoBtn">Buscar Producto</button>
+                <p id="productoNombre"></p>
+                <p id="productoPrecio"></p>
+
+                <label for="productoCantidadInput" style="margin-top:10px;">Cantidad:</label>
+                <input type="number" id="productoCantidadInput" value="1" min="1" />
+                <button id="agregarProductoBtn">Agregar al carrito</button>
+            </section>
+
+            <section id="carritoSection" style="margin-top:40px;">
+                <h2>Carrito de Compra</h2>
+                <table id="tablaCarrito">
+                    <thead>
+                        <tr>
+                            <th>Código</th><th>Producto</th><th>Cantidad</th><th>Precio Unitario</th><th>Subtotal</th><th>Eliminar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- items carrito -->
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="4" style="text-align:right;"><strong>Total:</strong></td>
+                            <td id="totalCompra">0.00</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+                <button id="finalizarVentaBtn" style="margin-top:20px;">Finalizar Venta</button>
+            </section>
+
+            <div id="mensaje"></div>
+        </main>
+
+        <script>
+            // Variables estado
+            let clienteActual = null;
+            let productoActual = null;
+            let carrito = [];
+
+            // Elementos DOM
+            const clienteDniInput = document.getElementById('clienteDniInput');
+            const buscarClienteBtn = document.getElementById('buscarClienteBtn');
+            const clienteNombreP = document.getElementById('clienteNombre');
+            const crearClienteSection = document.getElementById('crearClienteSection');
+            const nuevoNombreClienteInput = document.getElementById('nuevoNombreCliente');
+            const crearClienteBtn = document.getElementById('crearClienteBtn');
+
+            const productoIdInput = document.getElementById('productoIdInput');
+            const buscarProductoBtn = document.getElementById('buscarProductoBtn');
+            const productoNombreP = document.getElementById('productoNombre');
+            const productoPrecioP = document.getElementById('productoPrecio');
+            const productoCantidadInput = document.getElementById('productoCantidadInput');
+            const agregarProductoBtn = document.getElementById('agregarProductoBtn');
+
+            const tablaCarritoBody = document.querySelector('#tablaCarrito tbody');
+            const totalCompraTd = document.getElementById('totalCompra');
+            const finalizarVentaBtn = document.getElementById('finalizarVentaBtn');
+
+            const mensajeDiv = document.getElementById('mensaje');
+
+            // Función para mostrar mensajes
+            function mostrarMensaje(texto, tipo = 'success') {
+                mensajeDiv.textContent = texto;
+                mensajeDiv.className = tipo;
+                setTimeout(() => {
+                    mensajeDiv.textContent = '';
+                    mensajeDiv.className = '';
+                }, 4000);
+            }
+
+            // Buscar Cliente
+            buscarClienteBtn.addEventListener('click', async () => {
+                const valor= document.getElementById("clienteDniInput").value;
+                if (!valor) {
+                    mostrarMensaje('Por favor ingrese Código Cliente', 'error');
+                    return;
+                }
+
+                crearClienteSection.style.display = 'none';
+                clienteNombreP.textContent = '';
+
+                try {
+                    // Enviar parámetro codiClie al servlet clientebuscar
+                    const res = await fetch(`clientebuscar?codiClie=${valor}`);
+                    if (!res.ok) {
+                        throw new Error('Cliente no encontrado');
+                    }
+                    const data = await res.json();
+                    clienteActual = data;
+                    clienteNombreP.textContent = `Cliente: ${data.nombClie} (Código: ${data.codiClie})`;
+                    mostrarMensaje('Cliente encontrado');
+                } catch (error) {
+                    clienteActual = null;
+                    clienteNombreP.textContent = 'Cliente no encontrado.';
+                    mostrarMensaje('Cliente no encontrado. Puedes crear uno nuevo.', 'error');
+                    crearClienteSection.style.display = 'block';
+                }
+            });
+
+
+
+            // Crear nuevo cliente
+            crearClienteBtn.addEventListener('click', async () => {
+                const nuevoNombre = nuevoNombreClienteInput.value.trim();
+                if (!nuevoNombre) {
+                    mostrarMensaje('Ingrese un nombre válido para el cliente', 'error');
+                    return;
+                }
+
+                try {
+                    const res = await fetch('cliente', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({nombClie: nuevoNombre})
+                    });
+                    if (!res.ok)
+                        throw new Error('Error creando cliente');
+
+                    mostrarMensaje('Cliente creado con éxito');
+                    nuevoNombreClienteInput.value = '';
+                    crearClienteSection.style.display = 'none';
+
+                    // Opcional: buscar nuevo cliente automáticamente
+                    clienteDniInput.value = '';
+                    clienteNombreP.textContent = '';
+                } catch {
+                    mostrarMensaje('Error al crear cliente', 'error');
+                }
+            });
+
+            // Buscar producto
+            buscarProductoBtn.addEventListener('click', async () => {
+                const codProd = document.getElementById("productoIdInput").value.trim();
+                if (!codProd) {
+                    mostrarMensaje('Ingrese código de producto', 'error');
+                    return;
+                }
+
+                productoNombreP.textContent = '';
+                productoPrecioP.textContent = '';
+                productoActual = null;
+
+                try {
+                    const res = await fetch( `productobuscar?codiProd=${codProd}`);
+                    if (!res.ok){
+                        throw new Error('Producto no encontrado');
+                    }
+                        
+                    const data = await res.json();
+                    productoActual = data;
+                    productoNombreP.textContent = `Producto: ${data.nombProd}`;
+                    productoPrecioP.textContent = `Precio: S/. ${data.precProd.toFixed(2)}`;
+                    mostrarMensaje('Producto encontrado');
+                } catch {
+                    mostrarMensaje('Producto no encontrado', 'error');
+                }
+            });
+
+            // Agregar producto al carrito
+            agregarProductoBtn.addEventListener('click', () => {
+                if (!productoActual) {
+                    mostrarMensaje('Primero busque un producto válido', 'error');
+                    return;
+                }
+                let cantidad = parseInt(productoCantidadInput.value);
+                if (!cantidad || cantidad < 1) {
+                    mostrarMensaje('Cantidad inválida', 'error');
+                    return;
+                }
+
+                // Verificar si ya existe en carrito
+                let item = carrito.find(i => i.codiProd === productoActual.codiProd);
+                if (item) {
+                    item.cantidad += cantidad;
+                } else {
+                    carrito.push({
+                        codiProd: productoActual.codiProd,
+                        nombProd: productoActual.nombProd,
+                        cantidad: cantidad,
+                        precProd: productoActual.precProd
+                    });
+                }
+                productoCantidadInput.value = 1;
+                productoIdInput.value = '';
+                productoNombreP.textContent = '';
+                productoPrecioP.textContent = '';
+                productoActual = null;
+
+                mostrarMensaje('Producto agregado al carrito');
+                renderCarrito();
+            });
+
+            // Renderizar carrito
+            function renderCarrito() {
+                tablaCarritoBody.innerHTML = '';
+                let total = 0;
+                carrito.forEach((item, index) => {
+                    let subtotal = item.precProd * item.cantidad;
+                    total += subtotal;
+                    let tr = document.createElement('tr');
+                    tr.innerHTML = `
+                <td>${item.codiProd}</td>
+                <td>${item.nombProd}</td>
+                <td>${item.cantidad}</td>
+                <td>S/. ${item.precProd}</td>
+                <td>S/. ${subtotal.toFixed(2)}</td>
+                <td><button data-index="${index}" class="btnEliminar">X</button></td>
+              `;
+                    tablaCarritoBody.appendChild(tr);
+                });
+                totalCompraTd.textContent = total.toFixed(2);
+
+                // Agregar eventos eliminar
+                document.querySelectorAll('.btnEliminar').forEach(btn => {
+                    btn.onclick = () => {
+                        let idx = parseInt(btn.getAttribute('data-index'));
+                        carrito.splice(idx, 1);
+                        renderCarrito();
+                    };
+                });
+            }
+
+            // Finalizar venta
+            finalizarVentaBtn.addEventListener('click', async () => {
+                if (!clienteActual) {
+                    mostrarMensaje('Debe seleccionar o crear un cliente antes de finalizar', 'error');
+                    return;
+                }
+                if (carrito.length === 0) {
+                    mostrarMensaje('El carrito está vacío', 'error');
+                    return;
+                }
+
+                // Crear objeto venta
+                const venta = {
+                    clienteId: clienteActual.codiClie,
+                    detalles: carrito.map(item => ({
+                            productoId: item.codiProd,
+                            cantidad: item.cantidad,
+                            precProd: item.precProd
+                        }))
+                };
+
+                try {
+                    const res = await fetch('ventaregistrar', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(venta)
+                    });
+                    if (!res.ok)
+                        throw new Error('Error al procesar venta');
+
+                    mostrarMensaje('Venta finalizada con éxito');
+
+                    // Resetear todo
+                    clienteActual = null;
+                    productoActual = null;
+                    carrito = [];
+                    clienteDniInput.value = '';
+                    clienteNombreP.textContent = '';
+                    productoIdInput.value = '';
+                    productoNombreP.textContent = '';
+                    productoPrecioP.textContent = '';
+                    productoCantidadInput.value = 1;
+                    renderCarrito();
+                } catch {
+                    mostrarMensaje('Error al finalizar venta', 'error');
+                }
+            });
+
+        </script>
+    </body>
+</html>
