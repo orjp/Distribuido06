@@ -30,7 +30,7 @@ public class DetalleJpaController implements Serializable {
     private EntityManagerFactory emf = null;
 
     public DetalleJpaController() {
-        emf = Persistence.createEntityManagerFactory("com.mycompany_TPD06_war_1.0-SNAPSHOTPU");
+        emf = Persistence.createEntityManagerFactory("com.mycompany_Distribuido06_war_1.0-SNAPSHOTPU");
     }
     
 
